@@ -48,6 +48,22 @@
 		-ms-user-select: none;
 		user-select: none;
 	}
+	.banner-styleBottom {
+		margin: 0 auto;
+		position: fixed;
+		bottom: 0;
+		display: block;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+	.banner-styleTop {
+		margin: 0 auto;
+		position: fixed;
+		top: 0;
+		display: block;
+		left: 50%;
+		transform: translateX(-50%);
+	}
 	.canvas-app-progress {
 		position: absolute;
 		background-color: #0A8A40;
@@ -63,6 +79,21 @@
 		text-align: center;
 		line-height: 20px;
 	}
+	.link, .button {
+		font-family: sans-serif;
+		font-size: 14px;
+		font-weight: normal;
+		font-style: normal;
+		font-stretch: normal;
+		line-height: normal;
+		letter-spacing: 0px;
+		padding-top: 12px;
+	}
+	.buttons-background {
+		background-color: #ffffff;
+		width: 100%;
+		height: 42px;
+	}
 	body {
 		background-color: #ffffff;
 	}
@@ -76,53 +107,7 @@
 		background-size: cover;
 		background-image: url("bg_loading.png");
 	}
-  </style>
-  <script>
-	// Stub out GameAnalytics so the WASM doesn't crash
-	var gameanalytics = {
-		GameAnalytics: {
-			configureBuild: function(){},
-			configureAvailableResourceCurrencies: function(){},
-			configureAvailableResourceItemTypes: function(){},
-			initialize: function(){},
-			addProgressionEvent: function(){},
-			addResourceEvent: function(){},
-			addDesignEvent: function(){},
-			addBusinessEvent: function(){},
-			addErrorEvent: function(){},
-			configureUserId: function(){},
-			setEnabledInfoLog: function(){},
-			setEnabledVerboseLog: function(){},
-			setCustomDimension01: function(){},
-			setCustomDimension02: function(){},
-			setCustomDimension03: function(){},
-			startSession: function(){},
-			endSession: function(){},
-			onStop: function(){},
-			onResume: function(){}
-		}
-	};
-
-	// Stub out PokiSDK so the WASM doesn't crash
-	var PokiSDK = {
-		init: function() { return Promise.resolve(); },
-		gameLoadingStart: function(){},
-		gameLoadingFinished: function(){},
-		gameLoadingProgress: function(){},
-		gameplayStart: function(){},
-		gameplayStop: function(){},
-		commercialBreak: function() { return Promise.resolve(); },
-		rewardedBreak: function() { return Promise.resolve(true); },
-		displayAd: function() { return Promise.resolve(); },
-		destroyAd: function() { return Promise.resolve(); },
-		logError: function(){},
-		captureError: function(){},
-		setDebug: function(){},
-		isAdBlocked: function() { return false; },
-		getURLParam: function() { return ""; },
-		shareableURL: function() { return Promise.resolve(""); }
-	};
-  </script>
+  </style> 
   <script src="patch/js/poki-sdk.js"></script>
  </head> 
  <body> 
@@ -130,7 +115,8 @@
    <div id="canvas-container" class="canvas-app-canvas-container"> 
     <canvas id="canvas" class="canvas-app-canvas" tabindex="1" width="960" height="640"></canvas> 
    </div> 
-   <div class="buttons-background"></div> 
+   <div class="buttons-background"> 
+   </div> 
    <div id="progress-bar-root" style="position: absolute; bottom: 16%; left: 50%; visibility: hidden; z-index: 4;"> 
     <img id="progress-bar-bg" src="load_bar_bg.png"> 
     <img id="progress-bar-fg" src="load_bar_fg.png" style="position:absolute; clip: rect(0px,0px,0px,0px);"> 
@@ -138,60 +124,6 @@
   </div> 
   <script id="engine-loader" type="text/javascript" src="dmloader.js"></script> 
   <script id="engine-setup" type="text/javascript">
-	function _HashSHA1(key) {
-		function rotate_left(n,s) { return ( n<<s ) | (n>>>(32-s)); }
-		function cvt_hex(val) {
-			var str=""; var i; var v;
-			for( i=7; i>=0; i-- ) { v=(val>>>(i*4))&0x0f; str+=v.toString(16); }
-			return str;
-		}
-		var blockstart;
-		var i, j;
-		var W = new Array(80);
-		var H0 = 0x67452301;
-		var H1 = 0xEFCDAB89;
-		var H2 = 0x98BADCFE;
-		var H3 = 0x10325476;
-		var H4 = 0xC3D2E1F0;
-		var A, B, C, D, E;
-		var temp;
-		var str_len = key.length;
-		var word_array = [];
-		for( i=0; i<str_len-3; i+=4 ) {
-			j = key.charCodeAt(i)<<24 | key.charCodeAt(i+1)<<16 | key.charCodeAt(i+2)<<8 | key.charCodeAt(i+3);
-			word_array.push( j );
-		}
-		switch( str_len % 4 ) {
-			case 0: i = 0x080000000; break;
-			case 1: i = key.charCodeAt(str_len-1)<<24 | 0x0800000; break;
-			case 2: i = key.charCodeAt(str_len-2)<<24 | key.charCodeAt(str_len-1)<<16 | 0x08000; break;
-			case 3: i = key.charCodeAt(str_len-3)<<24 | key.charCodeAt(str_len-2)<<16 | key.charCodeAt(str_len-1)<<8 | 0x80; break;
-		}
-		word_array.push( i );
-		while( (word_array.length % 16) != 14 ) word_array.push( 0 );
-		word_array.push( str_len>>>29 );
-		word_array.push( (str_len<<3)&0x0ffffffff );
-		for ( blockstart=0; blockstart<word_array.length; blockstart+=16 ) {
-			for( i=0; i<16; i++ ) W[i] = word_array[blockstart+i];
-			for( i=16; i<=79; i++ ) W[i] = rotate_left(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
-			A = H0; B = H1; C = H2; D = H3; E = H4;
-			for( i= 0; i<=19; i++ ) { temp = (rotate_left(A,5) + ((B&C) | (~B&D)) + E + W[i] + 0x5A827999) & 0x0ffffffff; E = D; D = C; C = rotate_left(B,30); B = A; A = temp; }
-			for( i=20; i<=39; i++ ) { temp = (rotate_left(A,5) + (B ^ C ^ D) + E + W[i] + 0x6ED9EBA1) & 0x0ffffffff; E = D; D = C; C = rotate_left(B,30); B = A; A = temp; }
-			for( i=40; i<=59; i++ ) { temp = (rotate_left(A,5) + ((B&C) | (B&D) | (C&D)) + E + W[i] + 0x8F1BBCDC) & 0x0ffffffff; E = D; D = C; C = rotate_left(B,30); B = A; A = temp; }
-			for( i=60; i<=79; i++ ) { temp = (rotate_left(A,5) + (B ^ C ^ D) + E + W[i] + 0xCA62C1D6) & 0x0ffffffff; E = D; D = C; C = rotate_left(B,30); B = A; A = temp; }
-			H0 = (H0 + A) & 0x0ffffffff;
-			H1 = (H1 + B) & 0x0ffffffff;
-			H2 = (H2 + C) & 0x0ffffffff;
-			H3 = (H3 + D) & 0x0ffffffff;
-			H4 = (H4 + E) & 0x0ffffffff;
-		}
-		temp = cvt_hex(H0) + cvt_hex(H1) + cvt_hex(H2) + cvt_hex(H3) + cvt_hex(H4);
-		return temp.toLowerCase();
-	}
-
-	var DMSYS = DMSYS || {};
-	DMSYS.GetUserPersistentDataRoot = function() { return "/MonkeyMart_data"; };
-
 	var extra_params = {
 		archive_location_filter: function( path ) {
 			return ("archive" + path + "");
@@ -264,15 +196,18 @@
 	}, false);
 	window.addEventListener('focus', resize_game_canvas, false);
 
+	// HashSHA1 implementation
+	!function(){var r=function(r){for(var n="",t=7;t>=0;t--)n+="0123456789abcdef".charAt(r>>4*t&15);return n},n=function(r,n){var t=(65535&r)+(65535&n);return(r>>16)+(n>>16)+(t>>16)<<16|65535&t},e=function(r,n){return r<<n|r>>>32-n},o=function(r,n,t,e){return r<20?n&t|~n&e:r<40?n^t^e:r<60?n&t|n&e|t&e:n^t^e},u=function(r){return r<20?1518500249:r<40?1859775393:r<60?-1894007588:-899497514};window._HashSHA1=function(f){for(var a=function(r){for(var n=1+(r.length+8>>6),t=new Array(16*n),e=0;e<16*n;e++)t[e]=0;for(e=0;e<r.length;e++)t[e>>2]|=r.charCodeAt(e)<<24-e%4*8;return t[e>>2]|=128<<24-e%4*8,t[16*n-1]=8*r.length,t}(f),c=new Array(80),i=1732584193,h=-271733879,v=-1732584194,A=271733878,g=-1009589776,l=0;l<a.length;l+=16){for(var w=i,d=h,y=v,H=A,b=g,s=0;s<80;s++)c[s]=s<16?a[l+s]:e(c[s-3]^c[s-8]^c[s-14]^c[s-16],1),t=n(n(e(i,5),o(s,h,v,A)),n(n(g,c[s]),u(s))),g=A,A=v,v=e(h,30),h=i,i=t;i=n(i,w),h=n(h,d),v=n(v,y),A=n(A,H),g=n(g,b)}return r(i)+r(h)+r(v)+r(A)+r(g)}}();
+
 	var old_preloadAndCallMain = Module._preloadAndCallMain;
 	Module._preloadAndCallMain = function () {
 		var dir = DMSYS.GetUserPersistentDataRoot();
 		var resDir = _HashSHA1("MonkeyMart");
 		try { FS.unlink(dir + "/." + resDir + "/liveupdate.arcd"); } catch (e) {}
 		try { FS.unlink(dir + "/." + resDir + "/liveupdate.arci"); } catch (e) {}
-		try { FS.unlink(dir + "/." + resDir + "/liveupdate.arcd.tmp"); } catch (e) {}
 		try { FS.unlink(dir + "/." + resDir + "/liveupdate.arci.tmp"); } catch (e) {}
-		try { FS.unlink(dir + "/." + resDir + "/liveupdate.ref"); } catch (e) {}
+		try { FS.unlink(dir + "/." + resDir + "/liveupdate.mounts"); } catch (e) {}
+		if (Module._archiveLoaded) {}
 		old_preloadAndCallMain();
 	};
   </script> 
@@ -307,8 +242,30 @@
 		EngineLoader.stream_wasm = "false" === "true";
 		EngineLoader.load("canvas", "MonkeyMart");
   </script> 
+  <script type="text/javascript">
+		function poki_showBanner(vBanner) {
+			PokiSDK.displayAd(document.getElementById(vBanner), '320x50');
+		}
+		function poki_showBigBanner(vBanner) {
+			PokiSDK.displayAd(document.getElementById(vBanner), '728x90');
+		}
+		function poki_hideBanner(vBanner) {
+			PokiSDK.destroyAd(document.getElementById(vBanner));
+		}
+  </script>   
   <script id="poki-sdk-setup" type="text/javascript">
-		// Poki SDK disabled for self-hosted version
+		// Poki SDK disabled - just run the app directly
+		Progress.addListener(function(percentage){
+			if (percentage == 100) {
+				// loading done
+			}
+		});
+		Module['onRuntimeInitialized'] = function() {
+			Module.runApp("canvas", extra_params);
+		};
   </script>
+  <script type="text/javascript" src="GameAnalytics.js"></script>
+  <script src="js/analytics_ubg_v1_4.js"></script>
+  <script src="js/ubg235_client_v1_2.js"></script>
  </body>
 </html>
