@@ -76,7 +76,53 @@
 		background-size: cover;
 		background-image: url("bg_loading.png");
 	}
-  </style> 
+  </style>
+  <script>
+	// Stub out GameAnalytics so the WASM doesn't crash
+	var gameanalytics = {
+		GameAnalytics: {
+			configureBuild: function(){},
+			configureAvailableResourceCurrencies: function(){},
+			configureAvailableResourceItemTypes: function(){},
+			initialize: function(){},
+			addProgressionEvent: function(){},
+			addResourceEvent: function(){},
+			addDesignEvent: function(){},
+			addBusinessEvent: function(){},
+			addErrorEvent: function(){},
+			configureUserId: function(){},
+			setEnabledInfoLog: function(){},
+			setEnabledVerboseLog: function(){},
+			setCustomDimension01: function(){},
+			setCustomDimension02: function(){},
+			setCustomDimension03: function(){},
+			startSession: function(){},
+			endSession: function(){},
+			onStop: function(){},
+			onResume: function(){}
+		}
+	};
+
+	// Stub out PokiSDK so the WASM doesn't crash
+	var PokiSDK = {
+		init: function() { return Promise.resolve(); },
+		gameLoadingStart: function(){},
+		gameLoadingFinished: function(){},
+		gameLoadingProgress: function(){},
+		gameplayStart: function(){},
+		gameplayStop: function(){},
+		commercialBreak: function() { return Promise.resolve(); },
+		rewardedBreak: function() { return Promise.resolve(true); },
+		displayAd: function() { return Promise.resolve(); },
+		destroyAd: function() { return Promise.resolve(); },
+		logError: function(){},
+		captureError: function(){},
+		setDebug: function(){},
+		isAdBlocked: function() { return false; },
+		getURLParam: function() { return ""; },
+		shareableURL: function() { return Promise.resolve(""); }
+	};
+  </script>
   <script src="patch/js/poki-sdk.js"></script>
  </head> 
  <body> 
