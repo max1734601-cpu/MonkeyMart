@@ -84,79 +84,46 @@
   </style>
   <script>
 	// ============================================================
-	// INLINE STUBS - replaces ALL external SDK/analytics scripts
-	// No network calls, no redirects, no freezes
+	// BULLETPROOF STUBS - Proxy catches ANY method call
 	// ============================================================
 
-	// PokiSDK full stub
-	var PokiSDK = {
-		init: function() { return Promise.resolve(); },
-		gameLoadingStart: function(){},
-		gameLoadingFinished: function(){},
-		gameLoadingProgress: function(){},
-		gameplayStart: function(){},
-		gameplayStop: function(){},
-		commercialBreak: function() { return Promise.resolve(); },
-		rewardedBreak: function() { return Promise.resolve(true); },
-		displayAd: function() { return Promise.resolve(); },
-		destroyAd: function() { return Promise.resolve(); },
-		logError: function(){},
-		captureError: function(){},
-		setDebug: function(){},
-		isAdBlocked: function() { return false; },
-		getURLParam: function() { return ""; },
-		shareableURL: function() { return Promise.resolve(""); },
-		sendHighscore: function(){},
-		getHighscore: function() { return Promise.resolve(0); }
-	};
+	// Helper: create an object where any property access returns a no-op function
+	// and any sub-property access also returns a no-op or proxy
+	function _createDeepStub() {
+		var handler = {
+			get: function(target, prop) {
+				if (prop in target) return target[prop];
+				// Return a function that also acts as a proxy for chaining
+				var fn = function() { return Promise.resolve(); };
+				fn = new Proxy(fn, handler);
+				return fn;
+			},
+			apply: function() {
+				return Promise.resolve();
+			}
+		};
+		return new Proxy(function(){}, handler);
+	}
 
-	// GameAnalytics full stub
-	var gameanalytics = {
-		GameAnalytics: {
-			configureBuild: function(){},
-			configureAvailableResourceCurrencies: function(){},
-			configureAvailableResourceItemTypes: function(){},
-			configureAvailableCustomDimensions01: function(){},
-			configureAvailableCustomDimensions02: function(){},
-			configureAvailableCustomDimensions03: function(){},
-			initialize: function(){},
-			addProgressionEvent: function(){},
-			addResourceEvent: function(){},
-			addDesignEvent: function(){},
-			addBusinessEvent: function(){},
-			addErrorEvent: function(){},
-			configureUserId: function(){},
-			setEnabledInfoLog: function(){},
-			setEnabledVerboseLog: function(){},
-			setCustomDimension01: function(){},
-			setCustomDimension02: function(){},
-			setCustomDimension03: function(){},
-			startSession: function(){},
-			endSession: function(){},
-			onStop: function(){},
-			onResume: function(){},
-			addAdEvent: function(){},
-			EGAAdAction: { Clicked:1, Show:2, FailedShow:3, RewardReceived:4 },
-			EGAAdType: { Video:1, RewardedVideo:2, Playable:3, Interstitial:4, OfferWall:5, Banner:6 },
-			EGAResourceFlowType: { Source:1, Sink:2 },
-			EGAProgressionStatus: { Start:1, Complete:2, Fail:3 },
-			EGAErrorSeverity: { Debug:1, Info:2, Warning:3, Error:4, Critical:5 }
-		}
-	};
+	// PokiSDK - any method call returns a resolved promise or no-op
+	var PokiSDK = _createDeepStub();
 
-	// Block any navigation attempts from scripts
+	// GameAnalytics - any method call is a no-op
+	var gameanalytics = { GameAnalytics: _createDeepStub() };
+
+	// Banner functions the WASM expects
+	function poki_showBanner() {}
+	function poki_showBigBanner() {}
+	function poki_hideBanner() {}
+
+	// Block redirect attempts
 	var _origOpen = window.open;
 	window.open = function(url) {
-		if (url && (url.indexOf('ubg') !== -1 || url.indexOf('235') !== -1 || url.indexOf('games') !== -1)) {
+		if (url && typeof url === 'string' && (url.indexOf('ubg') !== -1 || url.indexOf('235') !== -1)) {
 			return null;
 		}
 		return _origOpen.apply(window, arguments);
 	};
-
-	// Banner functions the WASM expects
-	function poki_showBanner(vBanner) {}
-	function poki_showBigBanner(vBanner) {}
-	function poki_hideBanner(vBanner) {}
   </script>
  </head> 
  <body> 
