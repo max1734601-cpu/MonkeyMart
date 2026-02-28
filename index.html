@@ -48,22 +48,6 @@
 		-ms-user-select: none;
 		user-select: none;
 	}
-	.banner-styleBottom {
-		margin: 0 auto;
-		position: fixed;
-		bottom: 0;
-		display: block;
-		left: 50%;
-		transform: translateX(-50%);
-	}
-	.banner-styleTop {
-		margin: 0 auto;
-		position: fixed;
-		top: 0;
-		display: block;
-		left: 50%;
-		transform: translateX(-50%);
-	}
 	.canvas-app-progress {
 		position: absolute;
 		background-color: #0A8A40;
@@ -78,16 +62,6 @@
 		background-color: #FFE333;
 		text-align: center;
 		line-height: 20px;
-	}
-	.link, .button {
-		font-family: sans-serif;
-		font-size: 14px;
-		font-weight: normal;
-		font-style: normal;
-		font-stretch: normal;
-		line-height: normal;
-		letter-spacing: 0px;
-		padding-top: 12px;
 	}
 	.buttons-background {
 		background-color: #ffffff;
@@ -107,8 +81,83 @@
 		background-size: cover;
 		background-image: url("bg_loading.png");
 	}
-  </style> 
-  <script src="patch/js/poki-sdk.js"></script>
+  </style>
+  <script>
+	// ============================================================
+	// INLINE STUBS - replaces ALL external SDK/analytics scripts
+	// No network calls, no redirects, no freezes
+	// ============================================================
+
+	// PokiSDK full stub
+	var PokiSDK = {
+		init: function() { return Promise.resolve(); },
+		gameLoadingStart: function(){},
+		gameLoadingFinished: function(){},
+		gameLoadingProgress: function(){},
+		gameplayStart: function(){},
+		gameplayStop: function(){},
+		commercialBreak: function() { return Promise.resolve(); },
+		rewardedBreak: function() { return Promise.resolve(true); },
+		displayAd: function() { return Promise.resolve(); },
+		destroyAd: function() { return Promise.resolve(); },
+		logError: function(){},
+		captureError: function(){},
+		setDebug: function(){},
+		isAdBlocked: function() { return false; },
+		getURLParam: function() { return ""; },
+		shareableURL: function() { return Promise.resolve(""); },
+		sendHighscore: function(){},
+		getHighscore: function() { return Promise.resolve(0); }
+	};
+
+	// GameAnalytics full stub
+	var gameanalytics = {
+		GameAnalytics: {
+			configureBuild: function(){},
+			configureAvailableResourceCurrencies: function(){},
+			configureAvailableResourceItemTypes: function(){},
+			configureAvailableCustomDimensions01: function(){},
+			configureAvailableCustomDimensions02: function(){},
+			configureAvailableCustomDimensions03: function(){},
+			initialize: function(){},
+			addProgressionEvent: function(){},
+			addResourceEvent: function(){},
+			addDesignEvent: function(){},
+			addBusinessEvent: function(){},
+			addErrorEvent: function(){},
+			configureUserId: function(){},
+			setEnabledInfoLog: function(){},
+			setEnabledVerboseLog: function(){},
+			setCustomDimension01: function(){},
+			setCustomDimension02: function(){},
+			setCustomDimension03: function(){},
+			startSession: function(){},
+			endSession: function(){},
+			onStop: function(){},
+			onResume: function(){},
+			addAdEvent: function(){},
+			EGAAdAction: { Clicked:1, Show:2, FailedShow:3, RewardReceived:4 },
+			EGAAdType: { Video:1, RewardedVideo:2, Playable:3, Interstitial:4, OfferWall:5, Banner:6 },
+			EGAResourceFlowType: { Source:1, Sink:2 },
+			EGAProgressionStatus: { Start:1, Complete:2, Fail:3 },
+			EGAErrorSeverity: { Debug:1, Info:2, Warning:3, Error:4, Critical:5 }
+		}
+	};
+
+	// Block any navigation attempts from scripts
+	var _origOpen = window.open;
+	window.open = function(url) {
+		if (url && (url.indexOf('ubg') !== -1 || url.indexOf('235') !== -1 || url.indexOf('games') !== -1)) {
+			return null;
+		}
+		return _origOpen.apply(window, arguments);
+	};
+
+	// Banner functions the WASM expects
+	function poki_showBanner(vBanner) {}
+	function poki_showBigBanner(vBanner) {}
+	function poki_hideBanner(vBanner) {}
+  </script>
  </head> 
  <body> 
   <div id="app-container" class="canvas-app-container"> 
@@ -241,29 +290,6 @@
 
 		EngineLoader.stream_wasm = "false" === "true";
 		EngineLoader.load("canvas", "MonkeyMart");
-  </script> 
-  <script type="text/javascript">
-		function poki_showBanner(vBanner) {
-			PokiSDK.displayAd(document.getElementById(vBanner), '320x50');
-		}
-		function poki_showBigBanner(vBanner) {
-			PokiSDK.displayAd(document.getElementById(vBanner), '728x90');
-		}
-		function poki_hideBanner(vBanner) {
-			PokiSDK.destroyAd(document.getElementById(vBanner));
-		}
-  </script>   
-  <script id="poki-sdk-setup" type="text/javascript">
-		// Poki SDK disabled - just run the app directly
-		Progress.addListener(function(percentage){
-			if (percentage == 100) {
-				// loading done
-			}
-		});
-		Module['onRuntimeInitialized'] = function() {
-			Module.runApp("canvas", extra_params);
-		};
   </script>
-  <script type="text/javascript" src="GameAnalytics.js"></script>
  </body>
 </html>
