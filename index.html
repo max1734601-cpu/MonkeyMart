@@ -84,32 +84,108 @@
   </style>
   <script>
 	// ============================================================
-	// BULLETPROOF STUBS - Proxy catches ANY method call
+	// COMPLETE STUBS - every method explicitly defined
 	// ============================================================
 
-	// Helper: create an object where any property access returns a no-op function
-	// and any sub-property access also returns a no-op or proxy
-	function _createDeepStub() {
-		var handler = {
-			get: function(target, prop) {
-				if (prop in target) return target[prop];
-				// Return a function that also acts as a proxy for chaining
-				var fn = function() { return Promise.resolve(); };
-				fn = new Proxy(fn, handler);
-				return fn;
-			},
-			apply: function() {
-				return Promise.resolve();
-			}
-		};
-		return new Proxy(function(){}, handler);
+	var _noop = function(){};
+	var _noopPromise = function(){ return Promise.resolve(); };
+	var _noopTrue = function(){ return Promise.resolve(true); };
+	var _noopFalse = function(){ return false; };
+	var _noopStr = function(){ return ""; };
+	var _noopStrPromise = function(){ return Promise.resolve(""); };
+
+	// PokiSDK - every known method
+	var PokiSDK = {
+		init: _noopPromise,
+		gameLoadingStart: _noop,
+		gameLoadingFinished: _noop,
+		gameLoadingProgress: _noop,
+		gameplayStart: _noop,
+		gameplayStop: _noop,
+		commercialBreak: _noopPromise,
+		rewardedBreak: _noopTrue,
+		displayAd: _noopPromise,
+		destroyAd: _noopPromise,
+		logError: _noop,
+		captureError: _noop,
+		setDebug: _noop,
+		isAdBlocked: _noopFalse,
+		getURLParam: _noopStr,
+		shareableURL: _noopStrPromise,
+		sendHighscore: _noop,
+		getHighscore: function(){ return Promise.resolve(0); },
+		getLeaderboard: _noopPromise,
+		generateShareableURL: _noopStrPromise,
+		customEvent: _noop,
+		roundStart: _noop,
+		roundEnd: _noop,
+		muteAd: _noop,
+		getLanguage: function(){ return "en"; }
+	};
+
+	// GameAnalytics - every method from the official SDK source
+	var _GA = {
+		configureBuild: _noop,
+		configureAvailableResourceCurrencies: _noop,
+		configureAvailableResourceItemTypes: _noop,
+		configureAvailableCustomDimensions01: _noop,
+		configureAvailableCustomDimensions02: _noop,
+		configureAvailableCustomDimensions03: _noop,
+		configureAutoDetectAppVersion: _noop,
+		configureSdkGameEngineVersion: _noop,
+		configureGameEngineVersion: _noop,
+		configureUserId: _noop,
+		initialize: _noop,
+		addBusinessEvent: _noop,
+		addResourceEvent: _noop,
+		addProgressionEvent: _noop,
+		addDesignEvent: _noop,
+		addErrorEvent: _noop,
+		addAdEvent: _noop,
+		setEnabledInfoLog: _noop,
+		setEnabledVerboseLog: _noop,
+		setEnabledEventSubmission: _noop,
+		setEnabledManualSessionHandling: _noop,
+		setEnabledErrorReporting: _noop,
+		setCustomDimension01: _noop,
+		setCustomDimension02: _noop,
+		setCustomDimension03: _noop,
+		setGlobalCustomEventFields: _noop,
+		setEventProcessInterval: _noop,
+		startSession: _noop,
+		endSession: _noop,
+		onStop: _noop,
+		onResume: _noop,
+		getRemoteConfigsValueAsString: _noopStr,
+		isRemoteConfigsReady: _noopFalse,
+		addRemoteConfigsListener: _noop,
+		removeRemoteConfigsListener: _noop,
+		getABTestingId: _noopStr,
+		getABTestingVariantId: _noopStr,
+		getCommandCenterValueAsString: _noopStr,
+		isCommandCenterReady: _noopFalse,
+		addCommandCenterListener: _noop,
+		removeCommandCenterListener: _noop,
+		EGAAdAction: { Clicked:1, Show:2, FailedShow:3, RewardReceived:4, Request:5, Loaded:6 },
+		EGAAdType: { Video:1, RewardedVideo:2, Playable:3, Interstitial:4, OfferWall:5, Banner:6 },
+		EGAResourceFlowType: { Source:1, Sink:2 },
+		EGAProgressionStatus: { Start:1, Complete:2, Fail:3 },
+		EGAErrorSeverity: { Debug:1, Info:2, Warning:3, Error:4, Critical:5 },
+		methodMap: {}
+	};
+	// Fill methodMap with all methods
+	for (var k in _GA) {
+		if (typeof _GA[k] === 'function') _GA.methodMap[k] = _GA[k];
 	}
+	var gameanalytics = { GameAnalytics: _GA };
 
-	// PokiSDK - any method call returns a resolved promise or no-op
-	var PokiSDK = _createDeepStub();
-
-	// GameAnalytics - any method call is a no-op
-	var gameanalytics = { GameAnalytics: _createDeepStub() };
+	// Also define the command queue style global function
+	window.GameAnalytics = function() {
+		var args = Array.prototype.slice.call(arguments);
+		if (args.length > 0 && typeof _GA.methodMap[args[0]] === 'function') {
+			_GA.methodMap[args[0]].apply(null, args.slice(1));
+		}
+	};
 
 	// Banner functions the WASM expects
 	function poki_showBanner() {}
